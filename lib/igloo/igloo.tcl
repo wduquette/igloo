@@ -21,7 +21,10 @@ namespace eval ::igloo {
 # FIRST, Call the _init method on construction
 
 # Define _init on oo::object so that we can always chain to it.
-oo::define oo::object method _init {} {}
+oo::define oo::object method _init {} {
+    my variable _igloo
+    set _igloo(_init) 1
+}
 
 # Save the oo::define::constructor commmand so we call it later.
 if {[info commands oo::define::_constructor] eq ""} {
@@ -32,8 +35,13 @@ if {[info commands oo::define::_constructor] eq ""} {
 # because everything done by _init should be done before any construction
 # is done.
 proc oo::define::constructor {arglist body} {
-    set body "my _init\n$body"
-    tailcall _constructor $arglist $body
+    set prefix {
+        my variable _igloo
+        if {![info exists _igloo(_init)]} {
+            my _init
+        }
+    }
+    tailcall _constructor $arglist "$prefix\n$body"
 }
 
 
