@@ -33,6 +33,23 @@ proc cleanup {} {
 }
 
 #-------------------------------------------------------------------------
+# Basic Stuff
+
+test basic-1.1 {normal classes still work} -body {
+    oo::class create dog {
+        variable name
+        constructor {} { set name "Fido" }
+        method name {} { return $name    }
+    }
+    # Calling _init doesn't cause a problem
+    dog create fido 
+    fido name
+} -cleanup {
+    cleanup
+} -result {Fido}
+
+
+#-------------------------------------------------------------------------
 # var
 
 test var-1.1 {var declares variable} -body {

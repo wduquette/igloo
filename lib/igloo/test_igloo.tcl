@@ -7,10 +7,6 @@ oo::class create dog {
         that 2
     }
 
-    constructor {} {
-        # TBD: This is needed now, but get rid of it.
-    }
-
     method dump {} {
         return "Dog: $name, this=$data(this), that=$data(that)"
     }
