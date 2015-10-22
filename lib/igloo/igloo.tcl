@@ -23,7 +23,7 @@ namespace eval ::igloo {
 # Define _init on oo::object so that we can always chain to it.
 oo::define oo::object method _init {} {
     my variable _igloo
-    set _igloo(_init) 1
+    set _igloo(init) 1
 }
 
 # Save the oo::define::constructor commmand so we call it later.
@@ -37,7 +37,7 @@ if {[info commands oo::define::_constructor] eq ""} {
 proc oo::define::constructor {arglist body} {
     set prefix {
         my variable _igloo
-        if {![info exists _igloo(_init)]} {
+        if {![info exists _igloo(init)]} {
             my _init
         }
     }
@@ -74,7 +74,7 @@ proc ::oo::define::var {name args} {
     set ns [info object namespace $cls]
 
     # NEXT, save the initialization data.
-    set ${ns}::_vars($name) [list $aflag $value]
+    set ${ns}::_iglooVars($name) [list $aflag $value]
 
     # NEXT, define the _init method, if it hasn't already been defined.
     ::igloo::InstallInit $cls $ns
@@ -106,7 +106,7 @@ proc ::igloo::InstallInit {cls ns} {
             next
 
             # NEXT, initialize each variable.
-            foreach {var spec} [array get %s::_vars] {
+            foreach {var spec} [array get %s::_iglooVars] {
                 lassign $spec aflag value
 
                 if {$aflag} {
