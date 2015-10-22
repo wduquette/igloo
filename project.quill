@@ -1,0 +1,13 @@
+project igloo 0.0a0 "TclOO Helper Library"
+
+homepage http://home.page.url
+provide igloo
+require Tcl 8.6.4
+dist install {
+    %libs
+    docs/*.html
+    docs/man*/*.html
+    README.md
+    LICENSE
+}
+
