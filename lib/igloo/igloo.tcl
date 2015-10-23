@@ -21,10 +21,7 @@ namespace eval ::igloo {}
 # TBD: Consider putting this on an igloo::object baseclass, and making
 # every igloo::class inherit igloo::object.
 
-oo::define oo::object method _staticInit {} {
-    my variable _igloo
-    set _igloo(init) 1
-}
+oo::define oo::object method _staticInit {} {}
 
 #-------------------------------------------------------------------------
 # igloo::define
@@ -59,6 +56,7 @@ proc ::igloo::define::constructor {arglist body} {
     set prefix {
         my variable _igloo
         if {![info exists _igloo(init)]} {
+            set _igloo(init) 1
             my _staticInit
         }
     }
