@@ -11,20 +11,89 @@
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
-# Exported Commands
+# oo::object modifications
+
+# FIRST, Define _init on oo::object so that we can always chain to it.
+#
+# TBD: Consider putting this on an igloo::object baseclass, and making
+# every igloo::class inherit igloo::object.
+
+oo::define oo::object method _init {} {
+    my variable _igloo
+    set _igloo(init) 1
+}
+
+#-------------------------------------------------------------------------
+# igloo::define
+
+# FIRST, define the namespace ensemble for the igloo::define command.
+#
+# TBD: Another way to do this:
+#
+# * Put all definers in the igloo::define:: namespace.
+# * The definers implicitly act on $igloo::define::thisClass
+# * ::igloo::define works by setting igloo::define::thisClass,
+#   and evaluating the script or single command in that namespace.
 
 namespace eval ::igloo {
+    # TBD: If the method name is unknown, treat it as a defScript!
+    namespace ensemble create \
+        -command ::igloo::define \
+        -parameters class        \
+        -unknown ::igloo::Define.Unknown \
+        -map {
+            constructor ::igloo::Define.Constructor
+            method      ::igloo::Define.Method
+            variable    ::igloo::Define.Variable
+        }
+
     # TBD
+}
+
+# NEXT, define the helper commands.
+
+proc ::igloo::Define.Constructor {class arglist body} {
+    oo::define $class constructor $arglist $body
+}
+
+proc ::igloo::Define.Method {class name arglist body} {
+    oo::define $class method $name $arglist $body
+}
+
+proc ::igloo::Define.Variable {class name {value ""}} {
+    oo::define $class variable $name
+}
+
+proc ::igloo::Define.Unknown {ensemble class {defScript ""}} {
+    if {$defScript eq ""} {
+        puts "No defScript"
+        return
+    }
+
+    return [list ::igloo::Define.DefScript $defScript]
+}
+
+proc ::igloo::Define.DefScript {defScript class} {
+    puts "Pretending to process defScript $class <$defScript>"
+
+}
+
+#-------------------------------------------------------------------------
+# igloo::class
+
+# FIRST, define the igloo::class metaclass.  For now, it's a fake
+# metaclass; we'll grow it later.
+
+oo::object create igloo::class {
+    method create {class {defscript ""}} {
+        oo::class create $class
+        igloo::define $class $defscript
+    }
 }
 
 #-------------------------------------------------------------------------
 # FIRST, Call the _init method on construction
 
-# Define _init on oo::object so that we can always chain to it.
-oo::define oo::object method _init {} {
-    my variable _igloo
-    set _igloo(init) 1
-}
 
 # Save the oo::define::constructor commmand so we call it later.
 if {[info commands oo::define::_constructor] eq ""} {

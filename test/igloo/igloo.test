@@ -48,6 +48,18 @@ test basic-1.1 {normal classes still work} -body {
     cleanup
 } -result {Fido}
 
+#-------------------------------------------------------------------------
+# igloo::define method
+
+test method-1.1 {method declares method} -body {
+    oo::class create dog
+    igloo::define dog method bark {} { return "Woof" }
+    dog create fido 
+    fido bark
+} -cleanup {
+    cleanup
+} -result {Woof}
+
 
 #-------------------------------------------------------------------------
 # var
