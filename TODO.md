@@ -1,5 +1,6 @@
 # Igloo To-Do List
 
+* Begin to document the API.
 * Option handling
 * Components and "install"
 * Method delegation
