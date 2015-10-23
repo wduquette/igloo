@@ -1,10 +1,12 @@
 # Igloo To-Do List
 
-* Write tests for "var"
-  * Verify that it works with inheritance.
-  * Verify that it doesn't affect set variables in already existing
-    instances.
 * Option handling
 * Components and "install"
 * Method delegation
 * Option delegation
+* Handle unqualified class names properly
+  * E.g., replace unqualified class names with fully-qualified class 
+    names internally.
+* Better error checking
+  * To help the programmer find class definition errors
+* Better parameter error messages

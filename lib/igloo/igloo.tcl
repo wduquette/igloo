@@ -95,9 +95,6 @@ proc ::igloo::define::variable {name args} {
     # NEXT, save the initialization data.
     set ${ns}::_iglooVars($name) [list $aflag $value]
 
-    # NEXT, define the _staticInit method, if it hasn't already been defined.
-    ::igloo::InstallInit $thisClass $ns
-
     # NEXT, declare it as an instance variable.
     oo::define $thisClass variable $name
 }
@@ -111,26 +108,16 @@ proc ::igloo::define::variable {name args} {
 oo::object create igloo::class
 oo::objdefine igloo::class {
     method create {class {defscript ""}} {
+        # Create the class
         oo::class create $class
-        igloo::define $class $defscript
-    }
-}
 
-#-------------------------------------------------------------------------
-# Helpers
+        # Give it a default constructor that calls _staticInit as
+        # needed.
+        igloo::define $class constructor {} {}
 
-# InstallInit class ns
-#
-# class    - A class name
-# ns     - The class's namespace
-#
-# Installs the _staticInit command in the class if it hasn't already
-# been defined.
+        # Define _staticInit.
+        set ns [info object namespace $class]
 
-proc ::igloo::InstallInit {class ns} {
-    # FIRST, don't redefine the method if it's already defined.
-    if {"_staticInit" ni [info class methods $class -private]} {
-        # NEXT, define the method.
         oo::define $class method _staticInit {} [format {
             # FIRST, chain to parent first, because we want to do this
             # initialization from the top of the inheritance hierarchy on
@@ -149,12 +136,9 @@ proc ::igloo::InstallInit {class ns} {
             }
 
         } $ns]
-    }
 
-    # NEXT, define the constructor if it isn't already defined.
-    # This uses the igloo version, which calls _staticInit.
-    if {[llength [info class constructor $class]] == 0} {
-        igloo::define::constructor {} {}
-    }
 
+        igloo::define $class $defscript
+    }
 }
+
