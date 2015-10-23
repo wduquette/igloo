@@ -10,6 +10,9 @@
 #
 #-------------------------------------------------------------------------
 
+namespace eval ::igloo {}
+
+
 #-------------------------------------------------------------------------
 # oo::object modifications
 
@@ -26,56 +29,44 @@ oo::define oo::object method _init {} {
 #-------------------------------------------------------------------------
 # igloo::define
 
-# FIRST, define the namespace ensemble for the igloo::define command.
-#
-# TBD: Another way to do this:
-#
-# * Put all definers in the igloo::define:: namespace.
-# * The definers implicitly act on $igloo::define::thisClass
-# * ::igloo::define works by setting igloo::define::thisClass,
-#   and evaluating the script or single command in that namespace.
 
-namespace eval ::igloo {
-    # TBD: If the method name is unknown, treat it as a defScript!
-    namespace ensemble create \
-        -command ::igloo::define \
-        -parameters class        \
-        -unknown ::igloo::Define.Unknown \
-        -map {
-            constructor ::igloo::Define.Constructor
-            method      ::igloo::Define.Method
-            variable    ::igloo::Define.Variable
-        }
 
-    # TBD
+namespace eval ::igloo::define {
+    variable thisClass ""
+}
+
+proc ::igloo::define {class args} {
+    set ::igloo::define::thisClass $class
+
+    if {[llength $args] == 1} {
+        set script [lindex $args 0]
+    } else {
+        set script $args
+    }
+
+    try {
+        namespace eval ::igloo::define $script
+    } finally {
+        set ::igloo::define::thisClass ""
+    }
 }
 
 # NEXT, define the helper commands.
 
-proc ::igloo::Define.Constructor {class arglist body} {
-    oo::define $class constructor $arglist $body
+proc ::igloo::define::constructor {arglist body} {
+    ::variable thisClass
+    oo::define $thisClass constructor $arglist $body
 }
 
-proc ::igloo::Define.Method {class name arglist body} {
-    oo::define $class method $name $arglist $body
+proc ::igloo::define::method {name arglist body} {
+    ::variable thisClass
+    oo::define $thisClass method $name $arglist $body
 }
 
-proc ::igloo::Define.Variable {class name {value ""}} {
-    oo::define $class variable $name
-}
-
-proc ::igloo::Define.Unknown {ensemble class {defScript ""}} {
-    if {$defScript eq ""} {
-        puts "No defScript"
-        return
-    }
-
-    return [list ::igloo::Define.DefScript $defScript]
-}
-
-proc ::igloo::Define.DefScript {defScript class} {
-    puts "Pretending to process defScript $class <$defScript>"
-
+proc ::igloo::define::variable {name {initValue ""}} {
+    ::variable thisClass
+    oo::define $thisClass variable $name
+    # TBD: Handle initValue! 
 }
 
 #-------------------------------------------------------------------------
