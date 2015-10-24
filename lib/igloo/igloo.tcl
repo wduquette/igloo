@@ -37,7 +37,7 @@ proc ::igloo::define {class args} {
     set ns [info object namespace $class]
 
     if {![info exists ${ns}::_igloo(igloo)]} {
-        error "igloo::define of non-igloo class: \"$class\""
+        error "igloo::define on non-igloo class: \"$class\""
     }
 
     if {[llength $args] == 1} {

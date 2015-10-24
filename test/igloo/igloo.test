@@ -33,22 +33,203 @@ proc cleanup {} {
 }
 
 #-------------------------------------------------------------------------
-# igloo::define method
+# igloo::class create
 
-test method-1.1 {method declares method} -body {
+test class_create-1.1 {igloo::class creates igloo classes} -body {
     igloo::class create ::dog
-    igloo::define ::dog method bark {} { return "Woof" }
-    ::dog create fido 
-    fido bark
+    # Every igloo::class has _staticInit.
+    expr {"_staticInit" in [info class methods ::dog -private]}
 } -cleanup {
     cleanup
-} -result {Woof}
+} -result {1}
 
 
 #-------------------------------------------------------------------------
-# var
+# igloo::define method
 
-test variable-1.1 {variable declares variable} -body {
+# 1.*: Error Cases
+
+# TBD: Improve error message?
+test define-1.1 {no such class} -body {
+    igloo::define ::dog method bark {} { return "Woof" }
+} -returnCodes {
+    error
+} -cleanup {
+    cleanup
+} -result {::dog does not refer to an object}
+
+test define-1.2 {only works with igloo::classes} -body {
+    oo::class create ::dog
+    igloo::define ::dog method bark {} { return "Woof" }
+} -returnCodes {
+    error
+} -cleanup {
+    cleanup
+} -result {igloo::define on non-igloo class: "::dog"}
+
+# 2.*: Basic Operation
+
+test define-2.1 {define with subcommand} -body {
+    igloo::class create ::dog
+    igloo::define ::dog method bark {} { return "Woof" }
+    expr {"bark" in [info class methods ::dog]}
+} -cleanup {
+    cleanup
+} -result {1}
+
+test define-2.2 {define with script} -body {
+    igloo::class create ::dog
+    igloo::define ::dog {
+        method bark {} { return "Woof" }
+        method wag  {} { return "Wag"  }
+    }
+    list \
+        [expr {"bark" in [info class methods ::dog]}] \
+        [expr {"wag"  in [info class methods ::dog]}]
+} -cleanup {
+    cleanup
+} -result {1 1}
+
+#-------------------------------------------------------------------------
+# igloo::define constructor
+
+# 1.*: Errors
+
+# None yet
+
+# 2.*: Basic Operation
+
+test define_constructor-2.1 {defines constructor} -body {
+    igloo::class create ::dog
+    igloo::define ::dog constructor {theName} {
+        my variable name
+        set name $theName
+    }
+    igloo::define ::dog method name {} {
+        my variable name
+        return $name
+    }
+
+    dog create spot "Spot"
+    spot name
+} -cleanup {
+    cleanup
+} -result {Spot}
+
+test define_constructor-2.2 {constructor calls _staticInit} -body {
+    igloo::class create ::dog {
+        variable name "Fred"
+        constructor {} {
+            # Nothing
+        }
+        method name {} {
+            return $name
+        }
+    }
+
+    dog create mydog
+    mydog name
+} -cleanup {
+    cleanup
+} -result {Fred}
+
+#-------------------------------------------------------------------------
+# igloo::define method
+
+# 1.*: Errors
+
+# None yet
+
+# 2.*: Basic Operation
+
+test define_method-2.1 {defines a method} -body {
+    igloo::class create ::dog
+    igloo::define ::dog method bark {} {
+        return "Bark bark."
+    }
+
+    dog create spot
+    spot bark
+} -cleanup {
+    cleanup
+} -result {Bark bark.}
+
+
+#-------------------------------------------------------------------------
+# igloo::define superclass
+
+# 1.*: Error Effects
+
+# 2.*: Basic Operation
+
+test define_superclass-2.1 {can subclass another igloo::class} -body {
+    igloo::class create ::animal {
+        method bark {} { return "Bark." }
+    }
+
+    igloo::class create ::dog {
+        superclass ::animal
+        method wag {} { return "Wag." }
+    }
+    ::dog create fido 
+    list [fido bark] [fido wag]
+} -cleanup {
+    cleanup
+} -result {Bark. Wag.}
+
+test define_superclass-2.2 {can subclass an oo::class} -body {
+    oo::class create ::animal {
+        method bark {} { return "Bark." }
+    }
+
+    igloo::class create ::dog {
+        superclass ::animal
+        method wag {} { return "Wag." }
+    }
+    ::dog create fido 
+    list [fido bark] [fido wag]
+} -cleanup {
+    cleanup
+} -result {Bark. Wag.}
+
+test define_superclass-2.3 {oo::class can subclass igloo::class} -body {
+    igloo::class create ::animal {
+        variable breed mutt
+    }
+
+    oo::class create ::dog {
+        superclass ::animal
+        method breed {} {
+            my variable breed 
+            return $breed 
+        }
+    }
+    ::dog create fido 
+    fido breed
+} -cleanup {
+    cleanup
+} -result {mutt}
+
+#-------------------------------------------------------------------------
+# igloo::define variable
+
+# 1.*: Errors
+
+# TBD: Improve error message?
+test define_variable-1.1 {no variable name} -body {
+    igloo::class create ::dog
+    igloo::define ::dog variable
+} -returnCodes {
+    error
+} -cleanup {
+    cleanup
+} -result {wrong # args: should be "variable name ?arg ...?"}
+
+# TBD: Add declaration syntax checks
+
+# 2.*: basic operations
+
+test define_variable-2.1 {variable declares variable} -body {
     igloo::class create ::dog {
         variable name
         constructor {} { set name "Fido" }
@@ -60,7 +241,7 @@ test variable-1.1 {variable declares variable} -body {
     cleanup
 } -result {Fido}
 
-test variable-1.2 {variable initializes variable with empty string} -body {
+test define_variable-2.2 {variable initializes variable with empty string} -body {
     igloo::class create ::dog {
         variable name
         method name {} { return "*$name*" }
@@ -71,7 +252,7 @@ test variable-1.2 {variable initializes variable with empty string} -body {
     cleanup
 } -result {**}
 
-test variable-1.3 {variable initializes variable with value} -body {
+test define_variable-2.3 {variable initializes variable with value} -body {
     igloo::class create ::dog {
         variable name "Fido"
         method name {} { return "*$name*" }
@@ -82,7 +263,7 @@ test variable-1.3 {variable initializes variable with value} -body {
     cleanup
 } -result {*Fido*}
 
-test variable-1.4 {variable initializes variable with array value} -body {
+test define_variable-2.4 {variable initializes variable with array value} -body {
     igloo::class create ::dog {
         variable data -array {
             name "Fido"
@@ -96,7 +277,9 @@ test variable-1.4 {variable initializes variable with array value} -body {
     cleanup
 } -result {name Fido color brown}
 
-test variable-2.1 {parent class vars are initialized} -body {
+# 3.*: inheritance effects
+
+test define_variable-3.1 {parent class vars are initialized} -body {
     igloo::class create ::animal {
         variable name "Joe"
 
@@ -115,7 +298,7 @@ test variable-2.1 {parent class vars are initialized} -body {
     cleanup
 } -result {Joe mutt}
 
-test variable-2.2 {child class vars override superclass vars} -body {
+test define_variable-3.2 {child class vars override superclass vars} -body {
     igloo::class create ::animal {
         variable name "Joe"
 
@@ -131,7 +314,6 @@ test variable-2.2 {child class vars override superclass vars} -body {
 } -cleanup {
     cleanup
 } -result {Fido}
-
 
 #-------------------------------------------------------------------------
 # Cleanup
