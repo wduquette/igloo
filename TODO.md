@@ -1,5 +1,8 @@
 # Igloo To-Do List
 
+* Ensure that igloo::define is only used with igloo::classes
+  * On igloo::class create, add _igloo() to class
+  * On igloo::define, verify that _igloo() is there.
 * Begin to document the API.
 * Option handling
 * Components and "install"

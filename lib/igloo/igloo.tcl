@@ -34,6 +34,11 @@ namespace eval ::igloo::define {
 
 proc ::igloo::define {class args} {
     set ::igloo::define::thisClass $class
+    set ns [info object namespace $class]
+
+    if {![info exists ${ns}::_igloo(igloo)]} {
+        error "igloo::define of non-igloo class: \"$class\""
+    }
 
     if {[llength $args] == 1} {
         set script [lindex $args 0]
@@ -105,17 +110,27 @@ proc ::igloo::define::variable {name args} {
 
 oo::object create igloo::class
 oo::objdefine igloo::class {
+
+    # create class ?defscript?
+    #
+    # class      - A class name
+    # defscript  - Optionally, an igloo::define script
+    #
+    # Creates an igloo::class, optionally configuring it.
+
     method create {class {defscript ""}} {
-        # Create the class
+        # FIRST, Create the class
         oo::class create $class
 
-        # Give it a default constructor that calls _staticInit as
+        # NEXT, get the namespace and mark it as an igloo::class
+        set ns [info object namespace $class]
+        set ${ns}::_igloo(igloo) 1
+
+        # NEXT, Give it a default constructor that calls _staticInit as
         # needed.
         igloo::define $class constructor {} {}
 
-        # Define _staticInit.
-        set ns [info object namespace $class]
-
+        # NEXT, Define _staticInit.
         oo::define $class method _staticInit {} [format {
             # FIRST, chain to parent first, because we want to do this
             # initialization from the top of the inheritance hierarchy on
