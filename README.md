@@ -8,6 +8,7 @@ Igloo is a library that adds Snit capabilities to TclOO, including:
 
 We might also add, if I can figure out a good way to do it.
 
+* Hierarchical methods
 * Type variables
 * Type methods
 * Type components

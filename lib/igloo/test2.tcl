@@ -1,5 +1,9 @@
 # test2.tcl
 package require igloo
 
-oo::class create dog
+igloo::class create ::dog {
+    option -name Spot
+    option -breed mutt
+}
 
+dog create fido
