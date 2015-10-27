@@ -4,22 +4,22 @@ oo::class create living {
 
 source igloo.tcl
 
-oo::class create animal {
+igloo::class animal {
     superclass living
 
-    var name   fred
-    var family mammalia
+    variable name   fred
+    variable family mammalia
 
     method family {} {
         return $family
     }
 }
 
-oo::class create dog {
+igloo::class dog {
     superclass animal
 
-    var name spot
-    var data -array {
+    variable name spot
+    variable data -array {
         this 1
         that 2
     }
