@@ -1,4 +1,4 @@
-<manpage igloo(n) "igloo igloo module">
+<manpage igloo(n) "Igloo TclOO Convenience Layer">
 
 <section SYNOPSIS>
 
@@ -6,18 +6,60 @@
 
 <section DESCRIPTION>
 
-TODO: General description of the igloo(n) module
+Igloo(n) is a layer on top of Tcl's <tt oo::> object system that provides
+Snit-like convenience.  Igloo provides its own class building tools,
+<xref "#igloo::class create"> and <xref #igloo::define>, that provide access to
+the following capabilities:<p>
 
-<section COMMANDS>
+<ul>
+<li> Instance variable declarations with initial values
+<li> Snit-like option handling
+<li> Snit-like delegation
+</ul><p>
 
-TODO: Usage information for the igloo(n) module.
+Classes defined with igloo(n) are normal <tt oo::> classes; an 
+<tt igloo::class> can subclass and be subclassed by any normal 
+<tt oo::> class.<p>
+
+<section "GLOBAL COMMANDS">
+
+Igloo(n) provides the following global commands for creating and 
+configuring classes:<p>
+
+<deflist global>
+<defitem "igloo::class create" {igloo::class create <i class> ?<i defScript>?}>
+
+Defines a new class called <i class> in the caller's context, returning 
+the fully-qualifed class name.  If <i defScript> is given, it is
+an <xref #igloo::define> script.<p>
+
+<defitem "igloo::define" {igloo::define <i class defScript>}>
+<defitem "igloo::define2" {igloo::define <i class subcommand> <i args...>}>
+
+Adds one or more definitions to an existing <i class>, which must name a
+class in the caller's context.<p>
+
+If <i defScript> is given, it should be a script of zero or more of the 
+<xref "#CLASS DEFINITION COMMANDS">; otherwise, <i subcommand> should be
+a single <xref "#CLASS DEFINITION COMMANDS" "definition command"> with its
+<i args>.<p>
+
+</deflist global>
+
+<section "CLASS DEFINITION COMMANDS">
+
+TBD.<p>
+
+<section "INSTANCE COMMANDS">
+
+TBD.<p>
 
 <section AUTHOR>
 
-TBD<p>
+Will Duquette, with help from Sean Woods and Donal Fellows.<p>
 
 <section "SEE ALSO">
 
-TBD<p>
+TBD.<p>
 
 </manpage>

@@ -1,0 +1,243 @@
+<html>
+<head>
+<title>igloo(n): Igloo TclOO Convenience Layer</title>
+<style>
+<!--
+
+        /* Links should be displayed with no underline */
+        :link {
+            text-decoration: none;
+        }
+
+        :visited {
+            text-decoration: none;
+        }
+
+        /* Body is black on white, and indented. */
+        body {
+            color: black;
+            background-color: white;
+            margin-left: 0.5in;
+            margin-right: 0.5in;
+        }
+
+        /* For the page header */
+        h1.header {
+            position: relative;
+            left: -0.4in;
+            background-color: red;
+            color: black;
+        }
+
+        /* The title and section headers are outdented. */
+        h1 {
+            position: relative;
+            left: -0.4in;
+        }
+
+        h2 {
+            position: relative;
+            left: -0.4in;
+        }
+
+        h3 {
+            position: relative;
+            left: -0.2in;
+        }
+
+        /* Use for indenting */
+        .indent0 { }
+        .indent1 {
+            position: relative;
+            left: 0.4in
+        }
+        .indent2 {
+            position: relative;
+            left: 0.8in
+        }
+        .indent3 {
+            position: relative;
+            left: 1.2in
+        }
+        .indent4 {
+            position: relative;
+            left: 1.6in
+        }
+        .indent5 {
+            position: relative;
+            left: 2.0in
+        }
+        .indent6 {
+            position: relative;
+            left: 2.4in
+        }
+        .indent7 {
+            position: relative;
+            left: 2.8in
+        }
+        .indent8 {
+            position: relative;
+            left: 3.2in
+        }
+        .indent9 {
+            position: relative;
+            left: 3.6in
+        }
+
+        /* Outdent to margin */
+        .outdent {
+            position: relative;
+            left: -0.4in;
+        }
+
+        /* Styles for macroset_html(n) */
+
+        tr.topicrow  { vertical-align: baseline; }
+        td.topicname { font-weight: bold;        }
+
+        div.box {
+            border: 1px solid blue;
+            background-color: #DEF4FA;
+            padding: 2px;
+        }
+
+        pre.example {
+            border: 1px solid blue;
+            background-color: #FAF5D2;
+            padding: 2px;
+        }
+
+        pre.listing {
+            border: 1px solid blue;
+            background-color: #FAF5D2;
+            padding: 2px;
+        }
+
+        span.linenum {
+            background-color: #DEDC87;
+        }
+
+        div.mark {
+            font-family: Verdana;
+            font-size: 75%;
+            border: 1px solid black;
+            background-color: black;
+            color: white;
+            border-radius: 10px;
+            padding-left: 2px;
+            padding-right: 2px;
+            display: inline;
+        }
+
+        div.bigmark {
+            font-family: Verdana;
+            font-size: 100%;
+            border: 1px solid black;
+            background-color: black;
+            color: white;
+            border-radius: 10px;
+            padding-left: 2px;
+            padding-right: 2px;
+            display: inline;
+        }
+    -->
+</style>
+</head>
+<body>
+<h1 class="header">igloo 0.0a0: TclOO Helper Library</h1>
+<h1>igloo(n): Igloo TclOO Convenience Layer</h1>
+
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#GLOBAL COMMANDS">GLOBAL COMMANDS</a><br>
+<a href="#CLASS DEFINITION COMMANDS">CLASS DEFINITION COMMANDS</a><br>
+<a href="#INSTANCE COMMANDS">INSTANCE COMMANDS</a><br>
+<a href="#AUTHOR">AUTHOR</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+<p>
+
+
+<h2><a name="SYNOPSIS">SYNOPSIS</a></h2>
+
+
+<span class="indent-1"><a href="#igloo::class create">igloo::class create <i>class</i> ?<i>defScript</i>?</a></span><br>
+<span class="indent-1"><a href="#igloo::define">igloo::define <i>class defScript</i></a></span><br>
+<span class="indent-1"><a href="#igloo::define2">igloo::define <i>class subcommand</i> <i>args...</i></a></span><br>
+
+
+<h2><a name="DESCRIPTION">DESCRIPTION</a></h2>
+
+
+Igloo(n) is a layer on top of Tcl's <tt>oo::</tt> object system that provides
+Snit-like convenience.  Igloo provides its own class building tools,
+<a href="#igloo::class create">igloo::class create</a> and <a href="#igloo::define">igloo::define</a>, that provide access to
+the following capabilities:<p>
+
+<ul>
+<li> Instance variable declarations with initial values
+<li> Snit-like option handling
+<li> Snit-like delegation
+</ul><p>
+
+Classes defined with igloo(n) are normal <tt>oo::</tt> classes; an 
+<tt>igloo::class</tt> can subclass and be subclassed by any normal 
+<tt>oo::</tt> class.<p>
+
+<h2><a name="GLOBAL COMMANDS">GLOBAL COMMANDS</a></h2>
+
+
+Igloo(n) provides the following global commands for creating and 
+configuring classes:<p>
+
+<dl>
+
+<dt><b><a name="igloo::class create">igloo::class create <i>class</i> ?<i>defScript</i>?</a></b><dd>
+
+
+Defines a new class called <i>class</i> in the caller's context, returning 
+the fully-qualifed class name.  If <i>defScript</i> is given, it is
+an <a href="#igloo::define">igloo::define</a> script.<p>
+
+<dt><b><a name="igloo::define">igloo::define <i>class defScript</i></a></b><dd>
+
+<dt><b><a name="igloo::define2">igloo::define <i>class subcommand</i> <i>args...</i></a></b><dd>
+
+
+Adds one or more definitions to an existing <i>class</i>, which must name a
+class in the caller's context.<p>
+
+If <i>defScript</i> is given, it should be a script of zero or more of the 
+<a href="#CLASS DEFINITION COMMANDS">CLASS DEFINITION COMMANDS</a>; otherwise, <i>subcommand</i> should be
+a single <a href="#CLASS DEFINITION COMMANDS">definition command</a> with its
+<i>args</i>.<p>
+
+</dl>
+
+
+<h2><a name="CLASS DEFINITION COMMANDS">CLASS DEFINITION COMMANDS</a></h2>
+
+
+TBD.<p>
+
+<h2><a name="INSTANCE COMMANDS">INSTANCE COMMANDS</a></h2>
+
+
+TBD.<p>
+
+<h2><a name="AUTHOR">AUTHOR</a></h2>
+
+
+Will Duquette, with help from Sean Woods and Donal Fellows.<p>
+
+<h2><a name="SEE ALSO">SEE ALSO</a></h2>
+
+
+TBD.<p>
+
+<hr class="outdent">
+<span class="outdent">
+<i>Generated from igloo.manpage on Mon Oct 26 17:01:37 PDT 2015</i>
+</span>
+</body>
+</html>
+

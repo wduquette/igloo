@@ -33,6 +33,11 @@ namespace eval ::igloo::define {
 }
 
 proc ::igloo::define {class args} {
+    # FIRST, make sure the class is fully qualified
+    if {![string match "::*" $class]} {
+        set class [uplevel 1 {namespace current}]::$class
+    }
+
     set ::igloo::define::thisClass $class
     set ns [info object namespace $class]
     set ::igloo::define::thisNS $ns
@@ -143,7 +148,7 @@ oo::objdefine igloo::class {
 
     method create {class {defscript ""}} {
         # FIRST, Create the class
-        oo::class create $class
+        set class [uplevel 1 [list oo::class create $class]]
 
         # NEXT, get the namespace and mark it as an igloo::class
         set ns [info object namespace $class]
@@ -182,6 +187,8 @@ oo::objdefine igloo::class {
 
 
         igloo::define $class $defscript
+
+        return $class
     }
 }
 

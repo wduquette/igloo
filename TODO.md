@@ -3,9 +3,7 @@
 * Option handling
   * Error handling
   * Full Snit behavior (except option database)
-* Handle unqualified class names properly
-  * E.g., replace unqualified class names with fully-qualified class 
-    names internally.
+  * "from" helper
 * Begin to document the API.
 * Components and "install"
 * Method delegation

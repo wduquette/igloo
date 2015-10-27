@@ -43,6 +43,15 @@ test class_create-1.1 {igloo::class creates igloo classes} -body {
     cleanup
 } -result {1}
 
+test class_create-1.2 {igloo::class returns the fully-qualified class name} -body {
+    namespace eval ::test:: { 
+        igloo::class create dog
+    }
+} -cleanup {
+    cleanup
+} -result {::test::dog}
+
+
 
 #-------------------------------------------------------------------------
 # igloo::define method
@@ -89,6 +98,20 @@ test define-2.2 {define with script} -body {
 } -cleanup {
     cleanup
 } -result {1 1}
+
+test define-2.3 {define with unqualified class name.} -body {
+    igloo::class create ::dog
+    igloo::define dog {
+        method bark {} { return "Woof" }
+        method wag  {} { return "Wag"  }
+    }
+    list \
+        [expr {"bark" in [info class methods ::dog]}] \
+        [expr {"wag"  in [info class methods ::dog]}]
+} -cleanup {
+    cleanup
+} -result {1 1}
+
 
 #-------------------------------------------------------------------------
 # igloo::define constructor
