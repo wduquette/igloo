@@ -11,7 +11,6 @@
 #-------------------------------------------------------------------------
 
 namespace eval ::igloo {}
-
 #-------------------------------------------------------------------------
 # igloo::define
 
@@ -119,18 +118,21 @@ proc ::igloo::dynamic_methods {class ns} {
         }
         # NEXT, initialize options
         my variable options option_info
+        set option_info {}
         if {[info exists %ns%::_iglooOptions]} {
             foreach {option value} [array get %ns%::_iglooOptions] {
                 foreach {f v} $value {
                     dict set option_info $option $f $v
                 }
-                set options($option) [dict getnull $option_info $option default]
+                if {[dict exists $option_info default]} {
+                    set options($option) [dict get $option_info $option default]
+                }
             }
         }
         if {[info exists option_info]} {
             # Mix in the options class.
             if {"::igloo::optionMixin" ni [info class mixins %class%]} {
-                oo::define $thisClass mixin ::igloo::optionMixin
+                oo::define %class% mixin ::igloo::optionMixin
             }
         }
         # NEXT, initialize each variable.
@@ -186,15 +188,34 @@ proc ::igloo::define::superclass {args} {
   oo::define $thisClass superclass {*}$args
 }
 
-proc ::igloo::define::option {name {defvalue ""}} {
+proc ::igloo::define::option {name branchinfo} {
     ::variable thisClass
     ::variable thisNS
 
+    set optInfo {
+        read-only 0
+    }
+    foreach {var val} $branchinfo {
+        switch -- $var {
+            -defvalue {
+                dict set optInfo default $val
+            }
+            -readonly {
+                dict set optInfo read-only $val
+            }
+            -configuremethod {
+                dict set optInfo command-set $val
+            }
+            default {
+                dict set optInfo [string trimleft $var -] $val
+            }
+        }
+    }
     # FIRST, validate the option name
     # TODO
 
     # NEXT, save the option data and make options an instance variable.
-    set ${thisNS}::_iglooOptions($name) $defvalue
+    set ${thisNS}::_iglooOptions($name) $optInfo
     oo::define $thisClass variable options
 }
 
@@ -298,7 +319,7 @@ oo::class create ::igloo::optionMixin {
         # Run all validation checks
         foreach {field value} $values {
             if {[dict exists $option_info $field validate-command]} {
-                if {[catch [dict get $field validate-command [string map [list %self% [self] %field% $field %value% $value]] res opts]} {
+                if {[catch [string map [list %self% [self] %field% $field %value% $value] [dict get $option_info $field validate-command]] res opts]} {
                     return {*}$opts $res
                 }
             }
@@ -312,12 +333,12 @@ oo::class create ::igloo::optionMixin {
         # Set the values and apply them
         foreach {field value} $values {
             if {[dict exists $option_info $field map-command]} {
-               set options($field) [eval [dict get $field map-command [string map [list %self% [self] %field% $field %value% $value]]]
+               set options($field) [eval [string map [list %self% [self] %field% $field %value% $value] [dict get $option_info $field map-command]]]
             } else {
                set options($field) $value
             }
             if {[dict exists $option_info $field set-command]} {
-               eval [dict get $field set-command [string map [list %self% [self] %field% $field %value% $value]]]
+               eval [string map [list %self% [self] %field% $field %value% $value] [dict get $option_info $field set-command]]
             }
         }
     }
