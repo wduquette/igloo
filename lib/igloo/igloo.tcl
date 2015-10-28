@@ -12,21 +12,8 @@
 
 namespace eval ::igloo {}
 
-
-#-------------------------------------------------------------------------
-# oo::object modifications
-
-# FIRST, Define _staticInit on oo::object so that we can always chain to it.
-#
-# TBD: Consider putting this on an igloo::object baseclass, and making
-# every igloo::class inherit igloo::object.
-
-oo::define oo::object method _staticInit {} {}
-
 #-------------------------------------------------------------------------
 # igloo::define
-
-
 
 namespace eval ::igloo::define {
     variable thisClass ""
@@ -41,10 +28,16 @@ proc ::igloo::class {name args} {
         # FIRST, make sure the class is fully qualified
         if {![string match "::*" $name]} {
             set class ::[string trimleft [uplevel 1 {namespace current}]::$name :]
+        } else {
+            set class $name
         }
         # Create class if it doesn’t exist
         if {[info commands $class] eq {}} {
-            oo::class create $class { superclass ::igloo::object }
+            if {$class eq "::igloo::object"} {
+                oo::class create ::igloo::object {}
+            } else {
+                oo::class create $class { superclass ::igloo::object }
+            }
             set new 1
         }
     }
@@ -79,7 +72,6 @@ proc ::igloo::define {name script} {
     set ::igloo::define::thisClass $class
     set ns [info object namespace $class]
     set ::igloo::define::thisNS $ns
-
     try {
         namespace eval ::igloo::define $script
         if {![set ${ns}::_igloo(superclass)]} {
@@ -99,35 +91,36 @@ proc ::igloo::define {name script} {
 #
 proc ::igloo::dynamic_methods {class ns} {
     # Define ancestors
-    oo::define $class method ancestors {{reverse 0}} {
-       set result {}
-       if {$reverse} {
-         lappend result "%class"
-       }
-       if {"%class" ne "::igloo::object"} {
-          lappend result {*}[next $reverse]
-       }
-       if {!$reverse} {
-         lappend result "%class"
-       }
-       return $result
+    oo::define $class [string map [list %class% $class %ns% $ns] {
+    method ancestors {{reverse 0}} {
+        set result {}
+        if {$reverse} {
+           lappend result "%class%"
+        }
+        if {"%class%" eq "::igloo::object"} {
+            lappend result ::oo::class
+        } else {
+            lappend result {*}[next $reverse]
+        }
+        if {!$reverse} {
+            lappend result "%class%"
+        }
+        return $result
     }
 
     # Define _staticInit
     # NEXT, Define _staticInit.
-    oo::define $class method _staticInit {} [string map [list %class $class %ns $ns] {
-        puts "RUNNING _staticInit for [self]"
+    method _staticInit {} {
         # FIRST, chain to parent first, because we want to do this
         # initialization from the top of the inheritance hierarchy on
         # down.
-        if {"%class" ne "::igloo::object"} {
+        if {"%class%" ne "::igloo::object"} {
            next
         }
         # NEXT, initialize options
         my variable options option_info
-        if {[info exists %ns::_iglooOptions]} {
-            puts "Initializing options"
-            foreach {option value} [array get %ns::_iglooOptions] {
+        if {[info exists %ns%::_iglooOptions]} {
+            foreach {option value} [array get %ns%::_iglooOptions] {
                 foreach {f v} $value {
                     dict set option_info $option $f $v
                 }
@@ -136,15 +129,13 @@ proc ::igloo::dynamic_methods {class ns} {
         }
         if {[info exists option_info]} {
             # Mix in the options class.
-            if {"::igloo::optionMixin" ni [info class mixins %class]} {
-                puts "Mixing in ::igloo::optionMixin"
+            if {"::igloo::optionMixin" ni [info class mixins %class%]} {
                 oo::define $thisClass mixin ::igloo::optionMixin
             }
         }
         # NEXT, initialize each variable.
-        if {[info exists %ns::_iglooVars]} {
-            puts "Initializing variables"
-            foreach {var spec} [array get %ns::_iglooVars] {
+        if {[info exists %ns%::_iglooVars]} {
+            foreach {var spec} [array get %ns%::_iglooVars] {
                 my variable $var
                 lassign $spec aflag value
                 if {$aflag} {
@@ -154,6 +145,7 @@ proc ::igloo::dynamic_methods {class ns} {
                 }
             }
         }
+    }
     }]
 }
 
@@ -188,7 +180,6 @@ proc ::igloo::define::superclass {args} {
   ::variable thisClass
   ::variable thisNS
   set ${thisNS}::_igloo(superclass) 1
-    
   if {$thisClass ne "::igloo::object" && "::igloo::object" ni $args} {
     lappend args ::igloo::object
   }
@@ -198,8 +189,6 @@ proc ::igloo::define::superclass {args} {
 proc ::igloo::define::option {name {defvalue ""}} {
     ::variable thisClass
     ::variable thisNS
-
-    puts "Defining option $name $defvalue"
 
     # FIRST, validate the option name
     # TODO
@@ -241,7 +230,7 @@ proc ::igloo::define::variable {name args} {
 # This class is inherited by all classes that have options.
 #
 
-oo::class create ::igloo::object {
+::igloo::class ::igloo::object {
     # Put MOACish stuff in here
 }
 
@@ -333,3 +322,5 @@ oo::class create ::igloo::optionMixin {
         }
     }
 }
+
+

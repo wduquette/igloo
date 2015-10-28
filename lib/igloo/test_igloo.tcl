@@ -27,10 +27,11 @@ igloo::class dog {
     method dump {} {
         return "Dog: $name, [my howdy], this=$data(this), that=$data(that), [my family]"
     }
-    export _init
+    export _staticInit
 }
 
 dog create mydog
+puts [mydog ancestors]
 puts [mydog dump]
-puts <[info class call dog _init]>
+puts <[info class call dog _staticInit]>
 
