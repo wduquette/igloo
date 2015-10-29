@@ -48,15 +48,95 @@ a single <xref "#CLASS DEFINITION COMMANDS" "definition command"> with its
 
 <section "CLASS DEFINITION COMMANDS">
 
-TBD.<p>
+The following commands may appear in <xref "#igloo::class create"> and
+<xref #igloo::define> <i defScripts>, and as subcommands of 
+<xref #igloo::define>:<p>
+
+<b NOTE:> We need to test that these commands can be used at any time,
+and will affect existing objects in the logical way.  If the command
+is marked "<b>As for <tt oo::define></b>", then the command's semantics are
+essentially the same as for <tt oo::define>, though possibly with some
+additional magic behavior.<p>
+
+<deflist definition>
+
+<defitem constructor {constructor <i arglist body>}>
+
+<b>As for <tt oo::define>.</b> Defines the class constructor, where <i arglist> is the constructor's
+argument list and <i body> is the constructor's body.  If the class
+defines options, the <i arglist> should usually be the single token
+"<tt args>".<p>
+
+If no constructor is define, and options are defined, the class will
+have a default constructor that handles creation options.<p>
+
+<defitem method {method <i name arglist body>}>
+
+<b>As for <tt oo::define>.</b>  Defines an instance method in the usual
+way.<p>
+
+<defitem option {option <i name> <b TBD>}>
+
+Declares an option; the syntax is TBD but should match Snit, at least
+in capability.  Classes that define options will have <xref #cget>
+and <xref #configure> methods.  If no explicit <xref #constructor> is given,
+then a default constructor that handles creation options will be 
+provided.<p>
+
+If the class does provide a constructor, it is the constructor's
+responsibility to pass the creation options to <xref #configure>.
+<b NOTE:> when gluing components together in the presence of option
+delegation, it is often necessary to create the components before
+options are handled.  This rule allows the programmer to control
+the order of events as needed.<p>
+
+<defitem superclass {superclass <i name arglist body>}>
+
+<b>As for <tt oo::define>.</b>  Specifies one or more superclasses for
+the class.  Note that Igloo classes can subclass both <tt igloo::>
+<tt oo::> classes.<p>
+
+<defitem variable {variable <i name> ?-array? ?<i initValue>?}>
+
+Declares an instance variable called <i name>, making it visible in all
+method bodies.  If the <i initValue> is given, the variable
+will be initialized with this value before the constructor is called;
+otherwise it will be set to the empty string.<p>
+
+If the <tt -array> option is given, then the variable is an array 
+variable, and the <i initValue> will be assigned to the variable using
+<tt array set>.<p>
+
+
+</deflist definition>
 
 <section "INSTANCE COMMANDS">
 
-TBD.<p>
+Instances of igloo classes may have the following standard subcommands:<p>
+
+<deflist instance>
+
+<defitem cget {<i object> cget <i option>}>
+
+Returns the value of the <i option>.<p>
+
+<defitem configure {<i object> configure <i option value> ?<i option value...>?}>
+
+Sets the values of one or more options.<p>
+
+<b TODO>: the semantics of <xref #configure> are fairly complicated if we
+want Snit or Tk compatibility.  First, calling <xref #configure> without any
+arguments returns option metadata in a specific format; calling it with
+just an option returns option metadata for the specific option.  Second,
+Snit allows you to define configure, cget, and validate methods for each
+option, to provide hooks for special behavior.  We'll want to do all of
+that.<p>
+
+</deflist instance>
 
 <section AUTHOR>
 
-Will Duquette, with help from Sean Woods and Donal Fellows.<p>
+Will Duquette and Sean Woods, with help from Donal Fellows.<p>
 
 <section "SEE ALSO">
 
