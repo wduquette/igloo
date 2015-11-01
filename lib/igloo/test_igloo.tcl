@@ -18,9 +18,6 @@ igloo::class animal {
 igloo::class dog {
     superclass animal
 
-    option name {
-        set-command {puts "Renamed [self] to %value%" ; my variable name ; set name %value%}
-    }
     variable name spot
     variable data -array {
         this 1
@@ -37,8 +34,4 @@ dog create mydog
 puts [mydog ancestors]
 puts [mydog dump]
 puts <[info class call dog _staticInit]>
-
-dog create fluffy
-fluffy configure name fluffy
-puts [fluffy dump]
 
