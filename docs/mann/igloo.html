@@ -163,6 +163,13 @@
 <span class="indent-1"><a href="#igloo::class create">igloo::class create <i>class</i> ?<i>defScript</i>?</a></span><br>
 <span class="indent-1"><a href="#igloo::define">igloo::define <i>class defScript</i></a></span><br>
 <span class="indent-1"><a href="#igloo::define2">igloo::define <i>class subcommand</i> <i>args...</i></a></span><br>
+<span class="indent-1"><a href="#constructor">constructor <i>arglist body</i></a></span><br>
+<span class="indent-1"><a href="#method">method <i>name arglist body</i></a></span><br>
+<span class="indent-1"><a href="#option">option <i>name</i> <b>TBD</b></a></span><br>
+<span class="indent-1"><a href="#superclass">superclass <i>name arglist body</i></a></span><br>
+<span class="indent-1"><a href="#variable">variable <i>name</i> ?-array? ?<i>initValue</i>?</a></span><br>
+<span class="indent-1"><a href="#cget"><i>object</i> cget <i>option</i></a></span><br>
+<span class="indent-1"><a href="#configure"><i>object</i> configure <i>option value</i> ?<i>option value...</i>?</a></span><br>
 
 
 <h2><a name="DESCRIPTION">DESCRIPTION</a></h2>
@@ -217,17 +224,108 @@ a single <a href="#CLASS DEFINITION COMMANDS">definition command</a> with its
 <h2><a name="CLASS DEFINITION COMMANDS">CLASS DEFINITION COMMANDS</a></h2>
 
 
-TBD.<p>
+The following commands may appear in <a href="#igloo::class create">igloo::class create</a> and
+<a href="#igloo::define">igloo::define</a> <i>defScripts</i>, and as subcommands of 
+<a href="#igloo::define">igloo::define</a>:<p>
+
+<b>NOTE:</b> We need to test that these commands can be used at any time,
+and will affect existing objects in the logical way.  If the command
+is marked "<b>As for <tt>oo::define</tt></b>", then the command's semantics are
+essentially the same as for <tt>oo::define</tt>, though possibly with some
+additional magic behavior.<p>
+
+<dl>
+
+
+<dt><b><a name="constructor">constructor <i>arglist body</i></a></b><dd>
+
+
+<b>As for <tt>oo::define</tt>.</b> Defines the class constructor, where <i>arglist</i> is the constructor's
+argument list and <i>body</i> is the constructor's body.  If the class
+defines options, the <i>arglist</i> should usually be the single token
+"<tt>args</tt>".<p>
+
+If no constructor is define, and options are defined, the class will
+have a default constructor that handles creation options.<p>
+
+<dt><b><a name="method">method <i>name arglist body</i></a></b><dd>
+
+
+<b>As for <tt>oo::define</tt>.</b>  Defines an instance method in the usual
+way.<p>
+
+<dt><b><a name="option">option <i>name</i> <b>TBD</b></a></b><dd>
+
+
+Declares an option; the syntax is TBD but should match Snit, at least
+in capability.  Classes that define options will have <a href="#cget">cget</a>
+and <a href="#configure">configure</a> methods.  If no explicit <a href="#constructor">constructor</a> is given,
+then a default constructor that handles creation options will be 
+provided.<p>
+
+If the class does provide a constructor, it is the constructor's
+responsibility to pass the creation options to <a href="#configure">configure</a>.
+<b>NOTE:</b> when gluing components together in the presence of option
+delegation, it is often necessary to create the components before
+options are handled.  This rule allows the programmer to control
+the order of events as needed.<p>
+
+<dt><b><a name="superclass">superclass <i>name arglist body</i></a></b><dd>
+
+
+<b>As for <tt>oo::define</tt>.</b>  Specifies one or more superclasses for
+the class.  Note that Igloo classes can subclass both <tt>igloo::</tt>
+<tt>oo::</tt> classes.<p>
+
+<dt><b><a name="variable">variable <i>name</i> ?-array? ?<i>initValue</i>?</a></b><dd>
+
+
+Declares an instance variable called <i>name</i>, making it visible in all
+method bodies.  If the <i>initValue</i> is given, the variable
+will be initialized with this value before the constructor is called;
+otherwise it will be set to the empty string.<p>
+
+If the <tt>-array</tt> option is given, then the variable is an array 
+variable, and the <i>initValue</i> will be assigned to the variable using
+<tt>array set</tt>.<p>
+
+
+</dl>
+
 
 <h2><a name="INSTANCE COMMANDS">INSTANCE COMMANDS</a></h2>
 
 
-TBD.<p>
+Instances of igloo classes may have the following standard subcommands:<p>
+
+<dl>
+
+
+<dt><b><a name="cget"><i>object</i> cget <i>option</i></a></b><dd>
+
+
+Returns the value of the <i>option</i>.<p>
+
+<dt><b><a name="configure"><i>object</i> configure <i>option value</i> ?<i>option value...</i>?</a></b><dd>
+
+
+Sets the values of one or more options.<p>
+
+<b>TODO</b>: the semantics of <a href="#configure">configure</a> are fairly complicated if we
+want Snit or Tk compatibility.  First, calling <a href="#configure">configure</a> without any
+arguments returns option metadata in a specific format; calling it with
+just an option returns option metadata for the specific option.  Second,
+Snit allows you to define configure, cget, and validate methods for each
+option, to provide hooks for special behavior.  We'll want to do all of
+that.<p>
+
+</dl>
+
 
 <h2><a name="AUTHOR">AUTHOR</a></h2>
 
 
-Will Duquette, with help from Sean Woods and Donal Fellows.<p>
+Will Duquette and Sean Woods, with help from Donal Fellows.<p>
 
 <h2><a name="SEE ALSO">SEE ALSO</a></h2>
 
@@ -236,7 +334,7 @@ TBD.<p>
 
 <hr class="outdent">
 <span class="outdent">
-<i>Generated from igloo.manpage on Mon Oct 26 17:01:37 PDT 2015</i>
+<i>Generated from igloo.manpage on Wed Oct 28 17:22:17 PDT 2015</i>
 </span>
 </body>
 </html>
