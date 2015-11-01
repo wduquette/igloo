@@ -250,7 +250,6 @@ proc ::igloo::define::variable {name args} {
 #
 # This class is inherited by all classes that have options.
 #
-
 ::igloo::class ::igloo::object {
     # Put MOACish stuff in here
 }
@@ -343,5 +342,4 @@ oo::class create ::igloo::optionMixin {
         }
     }
 }
-
 
