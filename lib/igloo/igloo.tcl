@@ -117,6 +117,17 @@ proc ::igloo::dynamic_methods {class ns} {
            next
         }
         # NEXT, initialize options
+        # TBD: This builds up a collection of metadata for this 
+        # specific object from the _iglooOptions of all parent classes.
+        # It seems wasteful to duplicate it.  What would be preferable
+        # would be to keep it all in the class or in some central
+        # location, rather than duplicate it in each object.  But
+        # that requires something that tracks changes to the 
+        # object's class hierarchy.
+        #
+        # (Or... you could always listen to Sean and use the Metadata registry that
+        # was designed for this purpose AND handles changes to class hierarchy already...)
+
         my variable options option_info
         set option_info {}
         if {[info exists %ns%::_iglooOptions]} {
@@ -124,8 +135,8 @@ proc ::igloo::dynamic_methods {class ns} {
                 foreach {f v} $value {
                     dict set option_info $option $f $v
                 }
-                if {[dict exists $option_info default]} {
-                    set options($option) [dict get $option_info $option default]
+                if {[dict exists $option_info -default]} {
+                    set options($option) [dict get $option_info $option -default]
                 }
             }
         }
@@ -188,35 +199,75 @@ proc ::igloo::define::superclass {args} {
   oo::define $thisClass superclass {*}$args
 }
 
-proc ::igloo::define::option {name branchinfo} {
+# option name ?defvalue?
+# option name ?option value...?
+#
+# name      - The option name
+# defvalue  - The option's default value, which defaults to ""
+#
+# Declares an option called "name".  The name must begin with a
+# hyphen.  At present, it must consist of lower case letters and
+# underscores, though this is open for discussion.
+#
+# In Snit, one could specify the option, resource, and class names;
+# I don't imagine that this is required here.
+
+proc ::igloo::define::option {name args} {
     ::variable thisClass
     ::variable thisNS
 
-    set optInfo {
-        read-only 0
-    }
-    foreach {var val} $branchinfo {
-        switch -- $var {
-            -defvalue {
-                dict set optInfo default $val
-            }
-            -readonly {
-                dict set optInfo read-only $val
-            }
-            -configuremethod {
-                dict set optInfo command-set $val
-            }
-            default {
-                dict set optInfo [string trimleft $var -] $val
-            }
-        }
-    }
+    set errRoot "Error in \"option $name...\""
+
     # FIRST, validate the option name
-    # TODO
+    if {![regexp {^-[a-z][a-z_]*$} $name]} {
+        error "$errRoot, badly named option \"$name\"" 
+    }
 
     # NEXT, save the option data and make options an instance variable.
     set ${thisNS}::_iglooOptions($name) $optInfo
     oo::define $thisClass variable options
+    # TBD: Verify that it hasn't been delegated.
+
+    # NEXT, save the option data
+    namespace upvar $thisNS _iglooOptions _iglooOptions
+
+    set _iglooOptions($name) [dict create \
+        -default          "" \
+        -validatemethod   "" \
+        -configuremethod  "" \
+        -cgetmethod       "" \
+        -readonly         "" ]
+
+    if {[llength $args] == 1} {
+        dict set _iglooOptions($name) -default [lindex $args 0]
+    } else {
+        foreach {optopt val} $args {
+            switch -exact -- $optopt {
+                -default         -
+                -validatemethod  -
+                -configuremethod -
+                -cgetmethod      {
+                    dict set _iglooOptions($name) $optopt $val
+                }
+                -readonly        {
+                    if {![string is boolean -strict $val]} {
+                        error "$errRoot, -readonly requires a boolean, got \"$val\""
+                    }
+                    dict set _iglooOptions($name) $optopt $val
+                }
+                default {
+                    error "$errRoot, unknown option definition option \"$optopt\""
+                }
+            }
+        }
+    }
+
+    # NEXT, if this is the first option we need to mixin the 
+    # option handling code, and declare the options variable.
+    if {"::igloo::optionMixin" ni [info class mixins $thisClass]} {
+        oo::define $thisClass variable options
+        oo::define $thisClass mixin ::igloo::optionMixin
+    }
 }
 
 
@@ -242,9 +293,6 @@ proc ::igloo::define::variable {name args} {
     # NEXT, declare it as an instance variable.
     oo::define $thisClass variable $name
 }
-
-#-------------------------------------------------------------------------
-# Option Handling Mother of all Classes
 
 # igloo::object
 #
