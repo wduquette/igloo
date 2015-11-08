@@ -13,6 +13,29 @@
   * To help the programmer find class definition errors
 * Better parameter error messages
 
+## Notes
+
+* We don't ever try to fix up objects if superclasses change after they
+  are created.  That's the programmer's problem.
+  * A few things (methods, etc) are handled automatically by TclOO.
+    Other things are not.
+* Options
+  * A class and its superclasses all see the full options() array.
+  * Each class knows its own option metadata.
+  * The configure method handles the options it knows about, and passes
+    the remainder to its superclass.
+    * This includes option delegation.
+  * The igloo::object's configure method will throw an unknown option 
+    error if it is reached.
+* Variables
+  * Redeclaration checking would be nice, but is tricky.
+  * In general, variables are visible in their own classes in the chain.
+* Components
+  * Are variables.
+  * Setting a component using igloo::helper::install sets up the forwarding
+    for its delegated methods.
+  * I.e., always use "install" to set up forwarding.
+
 
 ## Questions
 
